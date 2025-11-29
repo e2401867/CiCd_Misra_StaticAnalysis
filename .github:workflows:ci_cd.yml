@@ -1,0 +1,31 @@
+name: CI/CD + MISRA Demo
+
+on: [push, pull_request]
+
+jobs:
+  build_and_analyze:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install dependencies
+        run: sudo apt update && sudo apt install -y cppcheck g++ cmake
+
+      - name: Build
+        run: |
+          mkdir build
+          cd build
+          cmake ..
+          make
+
+      - name: Run tests
+        run: ./build/calculator
+
+      - name: Static Analysis (MISRA)
+        run: cppcheck --enable=all --std=c++11 --misra --output-file=report.html src/
+
+      - name: Upload Report
+        uses: actions/upload-artifact@v3
+        with:
+          name: MISRA Report
+          path: report.html
